@@ -9,11 +9,11 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cyverse-de/messaging/v9"
+	"github.com/cyverse-de/messaging/v11"
 	pq "github.com/lib/pq"
 	"github.com/pkg/errors"
+	amqp "github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
 )
 
 // TimestampFromDBFormat is the format of the timestamps retrieved from the

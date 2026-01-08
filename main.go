@@ -24,7 +24,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/cyverse-de/messaging/v9"
+	"github.com/cyverse-de/messaging/v11"
 )
 
 const serviceName = "timelord"
