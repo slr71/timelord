@@ -132,7 +132,7 @@ func (ae *AppExposer) StopAnalyses(ctx context.Context, jobID, username string) 
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return fmt.Errorf("response status code for POST %s was %d as %s", callURL.String(), resp.StatusCode, username)
@@ -164,7 +164,7 @@ func (ae *AppExposer) VICESaveAndExit(ctx context.Context, analysis *Analysis) e
 	if err != nil {
 		return errors.Wrapf(err, "error calling save-and-exit for external-id %s", externalID)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return fmt.Errorf("response status code for POST %s was %d", apiURL.String(), resp.StatusCode)
@@ -177,7 +177,7 @@ func (ae *AppExposer) VICESaveAndExit(ctx context.Context, analysis *Analysis) e
 
 	log.Infof("response from %s was: %s", req.URL, string(body))
 
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	return nil
 }
@@ -205,7 +205,7 @@ func (ae *AppExposer) AdminListing(ctx context.Context, analysis *Analysis) (*Re
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("status code in response was %d", resp.StatusCode)

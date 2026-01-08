@@ -212,7 +212,7 @@ func (a *TimelordAnalyses) JobsToKill(ctx context.Context) ([]Job, error) {
 	); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	jobs := []Job{}
 
@@ -271,7 +271,7 @@ func (a *TimelordAnalyses) JobPeriodicWarnings(ctx context.Context) ([]Job, erro
 	); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	jobs := []Job{}
 
@@ -337,7 +337,7 @@ func (a *TimelordAnalyses) JobKillWarnings(ctx context.Context, minutes int64) (
 	); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	jobs := []Job{}
 
@@ -474,7 +474,7 @@ func (a *TimelordAnalyses) isInteractive(ctx context.Context, id string) (bool, 
 	if rows, err = a.dedb.QueryContext(ctx, stepTypeQuery, id); err != nil {
 		return false, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	for rows.Next() {
 		var t string
