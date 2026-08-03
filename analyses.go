@@ -511,24 +511,27 @@ func (a *TimelordAnalyses) getUserIDForJob(ctx context.Context, analysisID strin
 	return userID, nil
 }
 
-// getTimeLimitQuery is the query for calculating a number-of-seconds time limit for a job
-// if a time_limit_seconds is not set for a tool, use 72 hours (72 * 60 * 60 = 259200)
+// getTimeLimitQuery returns the time limit in seconds for a job.
+// If initial_time_limit_seconds was set at launch, it takes precedence;
+// otherwise the limit is summed from the job's tools, with a 72-hour (259200 s)
+// fallback for any tool whose time_limit_seconds is zero.
 const getTimeLimitQuery = `
-SELECT sum(CASE WHEN tools.time_limit_seconds > 0 THEN tools.time_limit_seconds ELSE 259200 END)
+SELECT COALESCE(
+    jobs.initial_time_limit_seconds,
+    sum(CASE WHEN tools.time_limit_seconds > 0 THEN tools.time_limit_seconds ELSE 259200 END)
+)
   FROM tools
   JOIN tasks ON tools.id = tasks.tool_id
   JOIN app_steps ON tasks.id = app_steps.task_id
   JOIN jobs ON jobs.app_version_id = app_steps.app_version_id
  WHERE jobs.id = $1
+ GROUP BY jobs.id
 `
 
 func (a *TimelordAnalyses) getTimeLimit(ctx context.Context, analysisID string) (int64, error) {
-	var (
-		err              error
-		timeLimitSeconds int64
-	)
-	if err = a.dedb.QueryRowContext(ctx, getTimeLimitQuery, analysisID).Scan(&timeLimitSeconds); err != nil {
-		return 0, err
+	var timeLimitSeconds int64
+	if err := a.dedb.QueryRowContext(ctx, getTimeLimitQuery, analysisID).Scan(&timeLimitSeconds); err != nil {
+		return 0, errors.Wrapf(err, "error fetching time limit for analysis %s", analysisID)
 	}
 	return timeLimitSeconds, nil
 }
